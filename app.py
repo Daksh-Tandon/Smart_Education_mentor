@@ -18,7 +18,7 @@ from graph.quizstate import QuizState
 start = time.time()
 from db.logincheck import login_check
 from db.registercheck import reg_check
-
+from langchain_core.messages import HumanMessage
 
 
 from dotenv import load_dotenv
@@ -141,15 +141,26 @@ async def upload_pdf(file: UploadFile = File(...)):
         return {
         "error": "PDF text extraction failed. Chunks are empty."
        }
-
-    # Create Vector Store
-    vector_store = FAISS.from_documents(
+    if os.path.exists("faiss_indexes/current"):
+        vector_store = FAISS.load_local(
+        "faiss_indexes/current",
+        embeddings,
+        allow_dangerous_deserialization=True
+        )
+        vector_store.add_documents(chunks)
+    else:
+        vector_store = FAISS.from_documents(
         chunks,
         embeddings
     )
     vector_store.save_local("faiss_indexes/current")
-    set_vector_store(vector_store)
-    print("After set:", get_vector_store())
+
+    # # Create Vector Store
+    # vector_store = FAISS.from_documents(
+    #     chunks,
+    #     embeddings
+    # )
+    # vector_store.save_local("faiss_indexes/current")
 
     return {
         "message": "PDF Uploaded Successfully",
@@ -241,25 +252,39 @@ class ExplainRequest(BaseModel):
 @app.post("/explain")
 async def explain(req: ExplainRequest):
 
-#     vector_store = FAISS.load_local(
-#     "faiss_indexes/current",
-#     embeddings,
-#     allow_dangerous_deserialization=True
 
-# )
     config = {
     "configurable": {
         "thread_id": req.user_id
     }
 }
-    result = graph_app.invoke({
+    result = graph_app.invoke(
 
+        # "question": req.question,
+
+        # "student_class": req.student_class,
+    #      {
+    #     "messages": [
+    #         {
+    #             "role": "user",
+    #             "content": req.question
+    #         }
+    #     ],
+    #     "question": req.question,
+    #     "student_class": req.student_class,
+    # },
+    # config=config)
+        {
+        "messages": [
+            HumanMessage(content=req.question)
+        ],
         "question": req.question,
-
         "student_class": req.student_class,
+    },
+    config=config)
         
 
-    },config=config)
+    # },config=config)
 
     return result
 

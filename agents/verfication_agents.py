@@ -23,30 +23,35 @@ def verification_agent(state: AgentState):
 
     web_results = state["web_results"]
     rag_results = state.get("rag_results", "")
+    history = state["messages"][-8:]
 
     prompt = f"""
-You are an Educational Verification Agent.
+    User Conversation History:
+{history}
 
 You have two knowledge sources:
 
 1. Web Search Results
 2. RAG Results (Educational Notes)
 
-Your job is NOT to explain.
+Your task is NOT to explain the topic.
+Your task is to produce a verified educational context.
 
-Your responsibilities:
+Responsibilities:
 
-1. Remove duplicate information.
+1. Remove duplicate information from both sources.
 2. Detect conflicting information.
-3. If RAG exists and conflicts with Web,
-   trust RAG.
-4. If RAG is empty,
-   use Web results.
-5. Merge useful information into one
-   verified educational context.
+3. Use the conversation history only to resolve references in the current question
+   (e.g., "it", "this", "that", "its", "they").
+4. If the current question is unrelated to the conversation history, ignore the history completely.
+5. Never add facts from the conversation history unless they are supported by the Web Search Results or RAG Results.
+6. If Web Search Results and RAG Results conflict, prioritize the RAG Results.
+7. If the RAG Results are empty, use the Web Search Results.
+8. Merge all verified information into a single educational context.
 
-Return ONLY the verified context and the confidence percentage.
-Do not add your own knowledge.
+Output only the verified educational context.
+Do not answer the user's question.
+Do not invent or assume missing information.
 
 Web Results:
 {web_results}

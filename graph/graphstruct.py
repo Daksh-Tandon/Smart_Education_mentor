@@ -10,7 +10,7 @@ from agents.Knowledgeagent import knowledge_agent
 from langgraph.checkpoint.sqlite import SqliteSaver
 evaluation_agent = EvaluationAgent()
 def evaluation_node(state):
-
+    print("Evaluation Started")
     return evaluation_agent.evaluate(state)
 
 

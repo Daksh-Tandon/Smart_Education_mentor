@@ -3,10 +3,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 import os
 from dotenv import load_dotenv
-# from datasets import Dataset
-# from ragas import evaluate
-# from ragas.metrics import Faithfulness, ContextPrecision
 load_dotenv()
+from langchain_core.messages import AIMessage
 # llm = ChatGoogleGenerativeAI(
 #     model="gemini-2.5-flash",
 #     google_api_key=os.getenv("GOOGLE_API_KEY"),
@@ -26,18 +24,24 @@ def teaching_agent(state: AgentState):
     student_class = state["student_class"]
     verified_context = state["verified_context"]
     question = state["question"]
+    history = state["messages"][-8:]
 
     prompt = f"""
 You are a teacher that uses adaptive way in conversation with students.
 
 Your task is to explain the topic according to the student's class.
+Question:
+{question}
+
+Previous Conversation:
+
+{history}
 
 
 Student Class:
 {student_class}
 
-Question:
-{question}
+
 
 Verified Context:
 {verified_context}
@@ -52,32 +56,19 @@ Instructions:
 - If the topic contains a formula, explain it.
 - End with 3 key takeaways.
 
-Return only the explanation.
+Return only the explanation and message
 """
 
-    explanation = llm.invoke(prompt).content
-    # evaluate_rag(state['question'],state['verified_context'],explanation)
+    explanation = llm.invoke(prompt).content,
+    
+    
     
 
     return {
-        "explanation": explanation
+         "explanation": explanation,
+    "messages": [
+        AIMessage(content=explanation)
+    ]
     }
 
 
-# def evaluate_rag(question, contexts, answer):
-
-#     dataset = Dataset.from_dict({
-#         "user_input": [question],
-#         "retrieved_contexts": [contexts],
-#         "response": [answer]
-#     })
-
-#     result = evaluate(
-#         dataset,
-#         metrics=[
-#             Faithfulness(),
-#             ContextPrecision()
-#         ]
-#     )
-
-#     return result

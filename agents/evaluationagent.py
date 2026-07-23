@@ -43,8 +43,10 @@ class EvaluationAgent:
         Return only JSON:
 
         {{
-        "score":0 or 1,
-        "reason":"explanation"
+        "score":0 / 1,
+        "reason":"explanation",
+         "confidence_score": percentage,
+         "correctness" :percentage
         }}
 
         """
@@ -99,7 +101,9 @@ class EvaluationAgent:
 
         {{
         "score":number,
-        "reason":"explanation"
+        "reason":"explanation",
+        "confidence_score": percentage,
+        "correctness":percentage
         }}
 
         """
